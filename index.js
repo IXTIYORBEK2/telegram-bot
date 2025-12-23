@@ -34,13 +34,17 @@ bot.onText(/\/start/, msg => {
 
   bot.sendMessage(
     msg.chat.id,
-    `✨ *Xush kelibsiz!*\n\n📊 Professional trading signallar\n👇 Menyudan foydalaning+
-    🆔 ID: ${id}
-⛔ Hozircha AKTIV EMASSIZ
+`✨ *Xush kelibsiz!*
+
+📊 Professional trading signallar
+👇 Menyudan foydalaning
+
+⛔ Hozircha *AKTIV EMASSIZ*
 Admin aktiv qilgach signal olasiz`,
     { parse_mode: 'Markdown', ...mainMenu }
   );
 });
+
 
 bot.onText(/\/userid/, (msg) => {
   const chatId = msg.chat.id;
@@ -50,6 +54,11 @@ bot.onText(/\/userid/, (msg) => {
 🆔 Sizning ID: ${chatId}
 
 ⚠️ Admin uchun saqlab qo‘ying`);
+});
+
+bot.onText(/\/myid/, (msg) => {
+  bot.sendMessage(msg.chat.id,
+`🆔 Sizning ID: ${msg.chat.id}`);
 });
 
 
