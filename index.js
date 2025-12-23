@@ -39,6 +39,33 @@ bot.onText(/\/start/, msg => {
   );
 });
 
+bot.onText(/\/userid/, (msg) => {
+  const chatId = msg.chat.id;
+
+  bot.sendMessage(chatId,
+`👋 Xush kelibsiz!
+🆔 Sizning ID: ${chatId}
+
+⚠️ Admin uchun saqlab qo‘ying`);
+});
+
+
+
+bot.onText(/\/activate (\d+)/, (msg, match) => {
+  if (msg.chat.id !== ADMIN_ID) return;
+
+  const userId = Number(match[1]);
+
+  if (!users.has(userId)) {
+    return bot.sendMessage(msg.chat.id, "❌ User topilmadi");
+  }
+
+  users.get(userId).active = true;
+
+  bot.sendMessage(userId, "✅ Siz AKTIV bo‘ldingiz. Signal olasiz 🚀");
+  bot.sendMessage(msg.chat.id, `✅ ${userId} aktiv qilindi`);
+});
+
 // ================= ADMIN AKTIV =================
 // /aktiv chatId kun
 bot.onText(/\/aktiv (\d+) (\d+)/, (msg, match) => {
@@ -72,7 +99,7 @@ bot.on('callback_query', query => {
 
 2️⃣ To‘lov:
 💳 Visa karta
-4737 7200 5396 8685
+4738 7200 5396 8685
 
 3️⃣ To‘lovdan so‘ng:
 📸 Chekni shu botga yuboring
@@ -86,7 +113,7 @@ bot.on('callback_query', query => {
       : '❌ Obuna aktiv emas',
     about_me: '👤 Professional trader',
     contact: '📞 @Trederako',
-    rules: '📜 Risk user zimmasida'
+    rules: `📜shartnomaga asosan Risk foydalanuvchi zimmasida kapital yo'qotilishiga bot javobgar emas Risk menejmentga amal qiling!`
   };
 
   if (actions[query.data]) {
@@ -174,6 +201,8 @@ bot.on('message', msg => {
         resize_keyboard: true
       }
     });
+
+    
   }
 
   if (text === '👥 Userlar soni') {
