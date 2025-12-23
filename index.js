@@ -17,7 +17,8 @@ const mainMenu = {
     keyboard: [
       ['📊 Signal'],
       ['💳 Obuna'],
-      ['ℹ️ Ma’lumot']
+      ['ℹ️ Ma’lumot'],
+        ['boshqa loyihalar']
     ],
     resize_keyboard: true
   }
@@ -136,7 +137,11 @@ bot.on('callback_query', query => {
       : '❌ Obuna aktiv emas',
     about_me: '👤 Professional trader',
     contact: '📞 @Trederako',
-    rules: `📜shartnomaga asosan Risk foydalanuvchi zimmasida kapital yo'qotilishiga bot javobgar emas Risk menejmentga amal qiling!`
+    rules: `📜shartnomaga asosan Risk foydalanuvchi zimmasida kapital yo'qotilishiga bot javobgar emas Risk menejmentga amal qiling!`,
+    web_loyiha:'eng yangi loyiha',
+    ai_rob:'aitreder loyihasi siz uchun',
+    pul_das:'tradePluse hamda koplab robotlar'
+
   };
 
   if (actions[query.data]) {
@@ -180,6 +185,18 @@ bot.on('message', msg => {
           [{ text: '📈 Oxirgi signal', callback_data: 'last_signal' }],
           [{ text: '🕒 Signal vaqtlari', callback_data: 'signal_time' }],
           [{ text: '❓ Qanday ishlaydi', callback_data: 'how_it_works' }]
+        ]
+      }
+    });
+  }
+
+   if (text === '❓boshqa loyihalar') {
+    return bot.sendMessage(chatId, '📊 loyihalar bolimi', {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: 'web ilovalar', callback_data: ' web_loyiha' }],
+          [{ text: 'ai robotlar', callback_data: 'ai_rob' }],
+          [{ text: '❓ pullik dasturlar', callback_data: 'pul_das' }]
         ]
       }
     });
