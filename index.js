@@ -194,9 +194,9 @@ bot.on('message', msg => {
     return bot.sendMessage(chatId, '📊 loyihalar bolimi', {
       reply_markup: {
         inline_keyboard: [
-          [{ text: 'web ilovalar', callback_data: ' web_loyiha' }],
-          [{ text: 'ai robotlar', callback_data: 'ai_rob' }],
-          [{ text: '❓ pullik dasturlar', callback_data: 'pul_das' }]
+          [{ text: '🌐web ilovalar', callback_data: 'web_loyiha' }],
+          [{ text: '🤖ai robotlar', callback_data: 'ai_rob' }],
+          [{ text: '❓pullik dasturlar', callback_data: 'pul_das' }]
         ]
       }
     });
