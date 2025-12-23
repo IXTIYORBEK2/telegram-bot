@@ -34,7 +34,10 @@ bot.onText(/\/start/, msg => {
 
   bot.sendMessage(
     msg.chat.id,
-    `✨ *Xush kelibsiz!*\n\n📊 Professional trading signallar\n👇 Menyudan foydalaning`,
+    `✨ *Xush kelibsiz!*\n\n📊 Professional trading signallar\n👇 Menyudan foydalaning+
+    🆔 ID: ${id}
+⛔ Hozircha AKTIV EMASSIZ
+Admin aktiv qilgach signal olasiz`,
     { parse_mode: 'Markdown', ...mainMenu }
   );
 });
@@ -80,6 +83,17 @@ bot.onText(/\/aktiv (\d+) (\d+)/, (msg, match) => {
   bot.sendMessage(userId, `✅ Obunangiz ${days} kunga AKTIV qilindi`);
   bot.sendMessage(msg.chat.id, '✅ User aktiv qilindi');
 });
+bot.onText(/📊 Signal/, (msg) => {
+  const user = users.get(msg.chat.id);
+
+  if (!user || !user.active) {
+    return bot.sendMessage(msg.chat.id,
+"⛔ Siz aktiv emassiz\nAdmin bilan bog‘laning");
+  }
+
+  // tahlil + signal
+});
+
 
 // ================= CALLBACK =================
 bot.on('callback_query', query => {
