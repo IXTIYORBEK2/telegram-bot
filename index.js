@@ -18,7 +18,7 @@ const mainMenu = {
       ['📊 Signal'],
       ['💳 Obuna'],
       ['ℹ️ Ma’lumot'],
-        ['boshqa loyihalar']
+      ['♾️boshqa']
     ],
     resize_keyboard: true
   }
@@ -190,7 +190,7 @@ bot.on('message', msg => {
     });
   }
 
-   if (text === '❓boshqa loyihalar') {
+   if (text === '♾️boshqa') {
     return bot.sendMessage(chatId, '📊 loyihalar bolimi', {
       reply_markup: {
         inline_keyboard: [
