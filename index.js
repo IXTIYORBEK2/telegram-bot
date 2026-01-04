@@ -1,5 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
 
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 const ADMIN_ID = Number(process.env.ADMIN_ID);
@@ -28,6 +29,49 @@ const mainMenu = {
 function isActive(userId) {
   return subscribers.has(userId) && subscribers.get(userId) > Date.now();
 }
+async function analyzeMarket(symbol = 'BTCUSDT', tf = '5m') {
+  const url = 'https://api.binance.com/api/v3/klines';
+
+  const res = await axios.get(url, {
+    params: { symbol, interval: tf, limit: 250 }
+  });
+
+  const closes = res.data.map(c => Number(c[4]));
+
+  const rsi = calculateRSI(closes);
+  const ema50 = calculateEMA(closes.slice(-60), 50);
+  const ema200 = calculateEMA(closes.slice(-220), 200);
+
+  let direction = ema50 > ema200 ? 'BUY 🟢' : 'SELL 🔴';
+  let score = 40; // trend borligi uchun
+
+  if (direction.includes('BUY') && rsi < 35) score += 30;
+  if (direction.includes('SELL') && rsi > 65) score += 30;
+
+  if (
+    (direction.includes('BUY') && rsi < 50) ||
+    (direction.includes('SELL') && rsi > 50)
+  ) score += 30;
+
+  let risk = 'Yuqori';
+  if (score >= 75) risk = 'Past';
+  else if (score >= 55) risk = 'O‘rtacha';
+
+  return `
+📊 *LIVE ANALIZ*
+
+Instrument: ${symbol}
+Timeframe: ${tf}
+
+📈 EMA 50 / 200: ${ema50 > ema200 ? 'UPTREND' : 'DOWNTREND'}
+📉 RSI(14): ${rsi.toFixed(2)}
+
+🎯 Signal: *${direction}*
+📊 Kuch: *${score}%*
+⚠️ Risk: *${risk}*
+`;
+}
+
 
 // ================= START =================
 bot.onText(/\/start/, msg => {
@@ -93,13 +137,22 @@ bot.onText(/\/aktiv (\d+) (\d+)/, (msg, match) => {
   bot.sendMessage(userId, `✅ Obunangiz ${days} kunga AKTIV qilindi`);
   bot.sendMessage(msg.chat.id, '✅ User aktiv qilindi');
 });
-bot.onText(/📊 Signal/, (msg) => {
-  const user = users.get(msg.chat.id);
+bot.onText(/📊 Signal/, async (msg) => {
+  const chatId = msg.chat.id;
 
-  if (!user || !user.active) {
-    return bot.sendMessage(msg.chat.id,
-"⛔ Siz aktiv emassiz\nAdmin bilan bog‘laning");
+  if (!isActive(chatId)) {
+    return bot.sendMessage(chatId,
+      "⛔ Siz aktiv emassiz\nAdmin bilan bog‘laning");
   }
+
+  try {
+    const analysis = await analyzeMarket('BTCUSDT', '5m');
+    bot.sendMessage(chatId, analysis, { parse_mode: 'Markdown' });
+  } catch (e) {
+    bot.sendMessage(chatId, '❌ Analizda xatolik');
+  }
+});
+
 
   // tahlil + signal
 });
@@ -273,5 +326,37 @@ setInterval(() => {
     }
   });
 }, 60 * 60 * 1000);
+
+
+
+
+// ===== RSI =====
+function calculateRSI(closes, period = 14) {
+  let gains = 0, losses = 0;
+
+  for (let i = closes.length - period - 1; i < closes.length - 1; i++) {
+    const diff = closes[i + 1] - closes[i];
+    if (diff > 0) gains += diff;
+    else losses -= diff;
+  }
+
+  const rs = gains / (losses || 1);
+  return 100 - (100 / (1 + rs));
+}
+
+// ===== EMA =====
+function calculateEMA(data, period) {
+  const k = 2 / (period + 1);
+  let ema = data[0];
+
+  for (let i = 1; i < data.length; i++) {
+    ema = data[i] * k + ema * (1 - k);
+  }
+  return ema;
+}
+
+
+
+
 
 console.log('🤖 BOT ISHLAYAPTI');
