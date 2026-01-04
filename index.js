@@ -154,8 +154,7 @@ bot.onText(/📊 Signal/, async (msg) => {
 });
 
 
-  // tahlil + signal
-});
+
 
 
 // ================= CALLBACK =================
