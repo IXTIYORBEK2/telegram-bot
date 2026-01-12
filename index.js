@@ -1,9 +1,88 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+
+
 
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 const ADMIN_ID = Number(process.env.ADMIN_ID);
+
+
+
+
+
+
+
+
+
+
+function isStrongXAUUSDSignal(d) {
+  let score = 0;
+
+  // TREND
+  if (d.ema50 > d.ema200) {
+    score += 40;
+  } else {
+    score += 40;
+  }
+
+  // RSI
+  if (d.ema50 > d.ema200 && d.rsi < 35) score += 30;
+  if (d.ema50 < d.ema200 && d.rsi > 65) score += 30;
+
+  // PRICE ACTION (retest)
+  if (d.retest === true) score += 30;
+
+  return score >= 80; // faqat kuchli signal
+}
+
+
+
+app.post('/xauusd', (req, res) => {
+  const d = req.body;
+
+  if (!isStrongXAUUSDSignal(d)) {
+    return res.send({ status: 'no_signal' });
+  }
+
+  const signalText = `
+📊 *XAUUSD AUTO SIGNAL*
+
+📌 Signal: *${d.ema50 > d.ema200 ? 'BUY 🟢' : 'SELL 🔴'}*
+💰 Price: ${d.price}
+
+📈 EMA50: ${d.ema50.toFixed(2)}
+📉 EMA200: ${d.ema200.toFixed(2)}
+📊 RSI: ${d.rsi.toFixed(1)}
+
+🔥 Kuchli signal (80%+)
+⚠️ Riskni boshqaring
+`;
+
+  users.forEach(id => {
+    if (isActive(id)) {
+      bot.sendMessage(id, signalText, { parse_mode: 'Markdown' });
+    }
+  });
+
+  lastSignal = signalText;
+  res.send({ status: 'signal_sent' });
+});
+
+
+
+
+
+
+
+
+
+
+
 
 // ================= DATA =================
 const users = new Set();                 // barcha userlar
