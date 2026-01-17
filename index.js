@@ -5,6 +5,11 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
+const PORT = 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 XAUUSD API server ${PORT}-portda ishga tushdi`);
+});
 
 
 
@@ -26,16 +31,13 @@ function isStrongXAUUSDSignal(d) {
   // TREND
   if (d.ema50 > d.ema200) {
     score += 40;
-  } else {
-    score += 40;
-  }
-
+  } 
   // RSI
   if (d.ema50 > d.ema200 && d.rsi < 35) score += 30;
   if (d.ema50 < d.ema200 && d.rsi > 65) score += 30;
 
   // PRICE ACTION (retest)
-  if (d.retest === true) score += 30;
+
 
   return score >= 80; // faqat kuchli signal
 }
@@ -152,6 +154,9 @@ Timeframe: ${tf}
 }
 
 
+bot.sendMessage(ADMIN_ID, "✅ TEST: XAUUSD DATA KELDI");
+
+
 // ================= START =================
 bot.onText(/\/start/, msg => {
   users.add(msg.chat.id);
@@ -196,7 +201,11 @@ bot.onText(/\/activate (\d+)/, (msg, match) => {
     return bot.sendMessage(msg.chat.id, "❌ User topilmadi");
   }
 
-  users.get(userId).active = true;
+subscribers.set(
+  userId,
+  Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 kun
+);
+
 
   bot.sendMessage(userId, "✅ Siz AKTIV bo‘ldingiz. Signal olasiz 🚀");
   bot.sendMessage(msg.chat.id, `✅ ${userId} aktiv qilindi`);
@@ -432,9 +441,24 @@ function calculateEMA(data, period) {
   }
   return ema;
 }
+setInterval(async () => {
+  try {
+    // POST orqali Node.js serverga signal yuborish
+    const { data } = await axios.post("http://127.0.0.1:3000/xauusd", {
+      ema50: 1900.2,   // test ma'lumot, keyin real data bilan almashtiring
+      ema200: 1895.5,
+      rsi: 42,
+      price: 1901.0
+    });
 
-
-
-
-
-console.log('🤖 BOT ISHLAYAPTI');
+    if (data.status === "signal_sent") {
+      await bot.sendMessage(
+        process.env.CHAT_ID,
+        "📊 XAUUSD SIGNAL KELDI!"
+      );
+      console.log("Signal Telegramga yuborildi");
+    }
+  } catch (e) {
+    console.log("❌ Serverga ulanishda xatolik:", e.message);
+  }
+}, 15000); // har 15 soniyada tekshiradi
