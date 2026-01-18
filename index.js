@@ -245,17 +245,21 @@ bot.onText(/📊 Signal/, async (msg) => {
 
 
 
-
-
-bot.onText(/\/about/, (msg) => {
+bot.onText(/^\/about$/, (msg) => {
   bot.sendMessage(msg.chat.id, 'ℹ️ Bot haqida:', {
     reply_markup: {
       inline_keyboard: [
-        [{ text: '🌐 Web sahifani ochish', url: 'https://cheerful-cranachan-599865.netlify.app/' }]
+        [
+          {
+            text: '🌐 Web sahifani ochish',
+            url: 'https://cheerful-cranachan-599865.netlify.app/'
+          }
+        ]
       ]
     }
   });
 });
+
 
 // ================= CALLBACK =================
 bot.on('callback_query', query => {
