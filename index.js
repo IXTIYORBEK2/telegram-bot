@@ -245,7 +245,7 @@ bot.onText(/📊 Signal/, async (msg) => {
 
 
 
-bot.onText(/^\/about$/, (msg) => {
+bot.onText(/\/about/, (msg) => {
   bot.sendMessage(msg.chat.id, 'ℹ️ Bot haqida:', {
     reply_markup: {
       inline_keyboard: [
