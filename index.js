@@ -4,7 +4,7 @@ const axios = require('axios');
 const express = require('express');
 const app = express();
 app.use(express.json());
-
+const WEBSITE_URL = 'https://cheerful-cranachan-599865.netlify.app/';
 const PORT = 3000;
 
 app.listen(PORT, () => {
@@ -243,7 +243,15 @@ bot.onText(/📊 Signal/, async (msg) => {
 
 
 
-
+bot.setChatMenuButton({
+  menu_button: {
+    type: 'web_app',
+    text: '🌐 Meni',
+    web_app: {
+      url: WEBSITE_URL
+    }
+  }
+});
 
 // ================= CALLBACK =================
 bot.on('callback_query', query => {
