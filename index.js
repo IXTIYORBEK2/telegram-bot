@@ -100,7 +100,6 @@ const mainMenu = {
       ['📊 Signal'],
       ['💳 Obuna'],
       ['ℹ️ Ma’lumot'],
-      ['♾️boshqa']
     ],
     resize_keyboard: true
   }
@@ -346,17 +345,7 @@ bot.on('message', msg => {
     });
   }
 
-   if (text === '♾️boshqa') {
-    return bot.sendMessage(chatId, '📊 loyihalar bolimi', {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '🌐web ilovalar', callback_data: 'web_loyiha' }],
-          [{ text: '🤖ai robotlar', callback_data: 'ai_rob' }],
-          [{ text: '❓pullik dasturlar', callback_data: 'pul_das' }]
-        ]
-      }
-    });
-  }
+  
 
   if (text === '💳 Obuna') {
     return bot.sendMessage(chatId, '💳 Obuna', {
