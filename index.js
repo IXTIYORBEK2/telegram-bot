@@ -1,9 +1,90 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
+const express = require('express');
+const app = express();
+app.use(express.json());
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 XAUUSD API server ${PORT}-portda ishga tushdi`);
+});
+
+
 
 const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 const ADMIN_ID = Number(process.env.ADMIN_ID);
+
+
+
+
+
+
+
+
+
+
+function isStrongXAUUSDSignal(d) {
+  let score = 0;
+
+  // TREND
+  if (d.ema50 > d.ema200) {
+    score += 40;
+  } 
+  // RSI
+  if (d.ema50 > d.ema200 && d.rsi < 35) score += 30;
+  if (d.ema50 < d.ema200 && d.rsi > 65) score += 30;
+
+  // PRICE ACTION (retest)
+
+
+  return score >= 80; // faqat kuchli signal
+}
+
+
+
+app.post('/xauusd', (req, res) => {
+  const d = req.body;
+
+  if (!isStrongXAUUSDSignal(d)) {
+    return res.send({ status: 'no_signal' });
+  }
+
+  const signalText = `
+📊 *XAUUSD AUTO SIGNAL*
+
+📌 Signal: *${d.ema50 > d.ema200 ? 'BUY 🟢' : 'SELL 🔴'}*
+💰 Price: ${d.price}
+
+📈 EMA50: ${d.ema50.toFixed(2)}
+📉 EMA200: ${d.ema200.toFixed(2)}
+📊 RSI: ${d.rsi.toFixed(1)}
+
+🔥 Kuchli signal (80%+)
+⚠️ Riskni boshqaring
+`;
+
+  users.forEach(id => {
+    if (isActive(id)) {
+      bot.sendMessage(id, signalText, { parse_mode: 'Markdown' });
+    }
+  });
+
+  lastSignal = signalText;
+  res.send({ status: 'signal_sent' });
+});
+
+
+
+
+
+
+
+
+
+
+
 
 // ================= DATA =================
 const users = new Set();                 // barcha userlar
@@ -19,7 +100,6 @@ const mainMenu = {
       ['📊 Signal'],
       ['💳 Obuna'],
       ['ℹ️ Ma’lumot'],
-      ['♾️boshqa']
     ],
     resize_keyboard: true
   }
@@ -73,6 +153,9 @@ Timeframe: ${tf}
 }
 
 
+bot.sendMessage(ADMIN_ID, "✅ TEST: XAUUSD DATA KELDI");
+
+
 // ================= START =================
 bot.onText(/\/start/, msg => {
   users.add(msg.chat.id);
@@ -117,7 +200,11 @@ bot.onText(/\/activate (\d+)/, (msg, match) => {
     return bot.sendMessage(msg.chat.id, "❌ User topilmadi");
   }
 
-  users.get(userId).active = true;
+subscribers.set(
+  userId,
+  Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 kun
+);
+
 
   bot.sendMessage(userId, "✅ Siz AKTIV bo‘ldingiz. Signal olasiz 🚀");
   bot.sendMessage(msg.chat.id, `✅ ${userId} aktiv qilindi`);
@@ -155,6 +242,22 @@ bot.onText(/📊 Signal/, async (msg) => {
 
 
 
+
+
+bot.onText(/\/about/, (msg) => {
+  bot.sendMessage(msg.chat.id, 'ℹ️ Bot haqida:', {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: '🌐 Web sahifani ochish',
+            url: 'https://cheerful-cranachan-599865.netlify.app/'
+          }
+        ]
+      ]
+    }
+  });
+});
 
 
 // ================= CALLBACK =================
@@ -242,17 +345,7 @@ bot.on('message', msg => {
     });
   }
 
-   if (text === '♾️boshqa') {
-    return bot.sendMessage(chatId, '📊 loyihalar bolimi', {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '🌐web ilovalar', callback_data: 'web_loyiha' }],
-          [{ text: '🤖ai robotlar', callback_data: 'ai_rob' }],
-          [{ text: '❓pullik dasturlar', callback_data: 'pul_das' }]
-        ]
-      }
-    });
-  }
+  
 
   if (text === '💳 Obuna') {
     return bot.sendMessage(chatId, '💳 Obuna', {
@@ -353,9 +446,24 @@ function calculateEMA(data, period) {
   }
   return ema;
 }
+setInterval(async () => {
+  try {
+    // POST orqali Node.js serverga signal yuborish
+    const { data } = await axios.post("http://127.0.0.1:3000/xauusd", {
+      ema50: 1900.2,   // test ma'lumot, keyin real data bilan almashtiring
+      ema200: 1895.5,
+      rsi: 42,
+      price: 1901.0
+    });
 
-
-
-
-
-console.log('🤖 BOT ISHLAYAPTI');
+    if (data.status === "signal_sent") {
+      await bot.sendMessage(
+        process.env.CHAT_ID,
+        "📊 XAUUSD SIGNAL KELDI!"
+      );
+      console.log("Signal Telegramga yuborildi");
+    }
+  } catch (e) {
+    console.log("❌ Serverga ulanishda xatolik:", e.message);
+  }
+}, 15000); // har 15 soniyada tekshiradi
